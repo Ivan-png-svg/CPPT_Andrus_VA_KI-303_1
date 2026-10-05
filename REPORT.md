@@ -129,8 +129,6 @@ data/input.csv
 │   └── wrapper/
 ├── data/
 │   └── input.csv
-├── out/
-│   └── report.txt
 ├── src/
 │   ├── main/
 │   │   └── java/
@@ -144,6 +142,8 @@ data/input.csv
 ├── mvnw
 └── mvnw.cmd
 ```
+
+Під час запуску програми додатково створюється файл `out/report.txt`. Каталог `out/` є згенерованим і не зберігається в Git.
 
 ---
 
@@ -271,6 +271,25 @@ java -cp target/classes ua.lpnu.kzp.Main --input data/input.csv --output out/rep
 ```powershell
 Get-Content out/report.txt -Encoding UTF8
 ```
+### Результати практичної перевірки
+
+На рисунку 1 наведено результат запуску програми для тестового файла `data/input.csv`.
+
+**Рисунок 1 — Результат обробки каталогу книжок**
+
+<img width="404" height="221" alt="image" src="https://github.com/user-attachments/assets/e941f28d-ff1c-413b-8967-8911f7e55a5e" />
+
+На рисунку 2 наведено результат автоматизованого тестування та статичного аналізу.
+
+**Рисунок 2 — Результат Maven Verify, JUnit та SpotBugs**
+
+<img width="801" height="651" alt="image" src="https://github.com/user-attachments/assets/3859c602-ff59-44b5-973d-a4310ae40745" />
+
+На рисунку 3 наведено результат виконання CI workflow у GitHub Actions.
+
+**Рисунок 3 — Успішне виконання GitHub Actions**
+
+<img width="1666" height="757" alt="image" src="https://github.com/user-attachments/assets/dc86d819-2a18-464e-9f86-06a97de6cfad" />
 
 ---
 
