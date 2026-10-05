@@ -1,36 +1,36 @@
 package ua.lpnu.kzp;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Properties;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 
 /**
- * Головний клас консольного застосунку для обробки каталогу книжок (Варіант 1).
+ * Консольна програма для обробки каталогу книжок.
+ *
+ * Формат запису:
+ * title;author;pages;price
  */
 public final class Main {
 
+    private static final Path DEFAULT_INPUT = Path.of("data", "input.csv");
+    private static final Path DEFAULT_OUTPUT = Path.of("out", "report.txt");
+
     private Main() {
-        // Приватний конструктор для запобігання створенню екземплярів службового класу
+        // Службовий клас не потребує створення екземплярів.
     }
-     /**
-     * Точка входу в програму.
+
+    /**
+     * Точка входу до програми.
      *
      * @param args аргументи командного рядка
      */
-
-   
     public static void main(String[] args) {
-        Path inputPath = Path.of("data", "input.csv");
-        Path outputPath = Path.of("out", "report.txt");
-        System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
+        Path input = DEFAULT_INPUT;
+        Path output = DEFAULT_OUTPUT;
 
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
@@ -39,24 +39,22 @@ public final class Main {
                     return;
                 }
                 case "--version" -> {
-                    printVersion();
+                    System.out.println("1.0.0");
                     return;
                 }
                 case "--input" -> {
-                    if (i + 1 < args.length && !args[i + 1].startsWith("--")) {
-                        inputPath = Path.of(args[++i]);
-                    } else {
-                        System.err.println("Помилка: Не вказано шлях до вхідного файлу після --input");
+                    if (i + 1 >= args.length) {
+                        System.err.println("Помилка: після --input потрібно вказати шлях.");
                         return;
                     }
+                    input = Path.of(args[++i]);
                 }
                 case "--output" -> {
-                    if (i + 1 < args.length && !args[i + 1].startsWith("--")) {
-                        outputPath = Path.of(args[++i]);
-                    } else {
-                        System.err.println("Помилка: Не вказано шлях до вихідного файлу після --output");
+                    if (i + 1 >= args.length) {
+                        System.err.println("Помилка: після --output потрібно вказати шлях.");
                         return;
                     }
+                    output = Path.of(args[++i]);
                 }
                 default -> {
                     System.err.println("Невідомий аргумент: " + args[i]);
@@ -66,154 +64,173 @@ public final class Main {
             }
         }
 
-        processCatalog(inputPath, outputPath);
-    }
-
-    /**
-     * Виводить довідку про використання програми.
-     */
-    public static void printHelp() {
-        System.out.println("""
-            Використання: java -jar lab01.jar [опції]
-            Опції:
-              --help           Вивести цю довідку
-              --version        Вивести версію програми та номер збірки
-              --input <path>   Вказати шлях до вхідного CSV файлу (за замовчуванням: data/input.csv)
-              --output <path>  Вказати шлях до вихідного файлу звіту (за замовчуванням: out/report.txt)
-            """);
-    }
-
-    /**
-     * Виводить інформацію про версію та номер CI-збірки.
-     */
-    /**
-     * Виводить інформацію про версію та номер CI-збірки.
-     */
-    public static void printVersion() {
-        Properties prop = new Properties();
-        try (InputStream input = Main.class.getClassLoader().getResourceAsStream("version.properties")) {
-            if (input != null) {
-                prop.load(input);
-                System.out.printf(Locale.ROOT, "LAB01 - Варіант 1 (Каталог книжок) v%s (build: %s)%n",
-                        prop.getProperty("version", "1.0.0"),
-                        prop.getProperty("buildNumber", "local"));
-            } else {
-                System.out.println("LAB01 - Варіант 1 (Каталог книжок) v1.0.0 (local build)");
-            }
-        } catch (IOException e) {
-            System.out.println("LAB01 - Варіант 1 (Каталог книжок) v1.0.0 (local build)");
-        }
-    }
-
-    /**
-     * Зчитує, валідує CSV-файл, обчислює показники та формує звіт.
-     *
-     * @param inputPath  шлях до вхідного CSV
-     * @param outputPath шлях для збереження звіту
-     */
-    public static void processCatalog(Path inputPath, Path outputPath) {
-        if (!Files.exists(inputPath)) {
-            System.err.println("Помилка: Вхідний файл не знайдено за шляхом " + inputPath);
-            return;
-        }
-
-        List<String> lines;
         try {
-            lines = Files.readAllLines(inputPath, StandardCharsets.UTF_8);
+            String report = processCatalog(input);
+            System.out.print(report);
+
+            Path parent = output.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+
+            Files.writeString(output, report, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            System.err.println("Помилка зчитування файлу: " + e.getMessage());
-            return;
+            System.err.println("Помилка роботи з файлом: " + e.getMessage());
         }
+    }
+
+    /**
+     * Читає каталог, перевіряє записи та формує звіт.
+     *
+     * @param input шлях до CSV-файлу
+     * @return сформований текст звіту
+     * @throws IOException якщо файл неможливо прочитати
+     */
+    static String processCatalog(Path input) throws IOException {
+        List<String> lines = Files.readAllLines(input, StandardCharsets.UTF_8);
 
         int validCount = 0;
-        int invalidCount = 0;
         int totalPages = 0;
-        double totalPriceSum = 0.0;
-        double maxPrice = -1.0;
-        String mostExpensiveBook = "";
+        double totalCatalogValue = 0.0;
+        double maxPrice = Double.NEGATIVE_INFINITY;
+
+        String mostExpensiveTitle = "";
+        String mostExpensiveAuthor = "";
 
         List<String> errors = new ArrayList<>();
 
         for (int i = 0; i < lines.size(); i++) {
-            String line = lines.get(i).trim();
-            if (line.isEmpty()) {
+            String line = lines.get(i);
+            int lineNumber = i + 1;
+
+            if (line.trim().isEmpty()) {
+                errors.add("Рядок " + lineNumber + ": порожній рядок");
                 continue;
             }
 
             String[] fields = line.split(";", -1);
+
             if (fields.length != 4) {
-                invalidCount++;
-                errors.add(String.format("Рядок %d: некоректна кількість полів (%d замість 4)", i + 1, fields.length));
+                errors.add("Рядок " + lineNumber + ": неправильна кількість полів");
                 continue;
             }
 
             String title = fields[0].trim();
             String author = fields[1].trim();
-            String pagesStr = fields[2].trim();
-            String priceStr = fields[3].trim();
+            String pagesText = fields[2].trim();
+            String priceText = fields[3].trim();
 
             if (title.isEmpty() || author.isEmpty()) {
-                invalidCount++;
-                errors.add(String.format("Рядок %d: порожня назва книжки або автор", i + 1));
+                errors.add("Рядок " + lineNumber + ": порожня назва книжки або автор");
                 continue;
             }
-
-            int pages;
-            double price;
 
             try {
-                pages = Integer.parseInt(pagesStr);
-                price = Double.parseDouble(priceStr);
+                int pages = Integer.parseInt(pagesText);
+                double price = Double.parseDouble(priceText);
+
+                if (pages <= 0) {
+                    errors.add(
+                            "Рядок " + lineNumber
+                                    + ": кількість сторінок повинна бути більшою за 0"
+                    );
+                    continue;
+                }
+
+                if (price < 0) {
+                    errors.add(
+                            "Рядок " + lineNumber
+                                    + ": ціна не може бути від'ємною"
+                    );
+                    continue;
+                }
+
+                validCount++;
+                totalPages += pages;
+                totalCatalogValue += price;
+
+                if (price > maxPrice) {
+                    maxPrice = price;
+                    mostExpensiveTitle = title;
+                    mostExpensiveAuthor = author;
+                }
             } catch (NumberFormatException e) {
-                invalidCount++;
-                errors.add(String.format("Рядок %d: помилка числового формату для сторінок або ціни", i + 1));
-                continue;
-            }
-
-            if (pages <= 0 || price < 0) {
-                invalidCount++;
-                errors.add(String.format("Рядок %d: від'ємна ціна або кількість сторінок <= 0", i + 1));
-                continue;
-            }
-
-            validCount++;
-            totalPages += pages;
-            totalPriceSum += price;
-
-            if (price > maxPrice) {
-                maxPrice = price;
-                mostExpensiveBook = String.format("%s (%s)", title, author);
+                errors.add(
+                        "Рядок " + lineNumber
+                                + ": неправильний числовий формат"
+                );
             }
         }
 
-        double averagePages = validCount > 0 ? (double) totalPages / validCount : 0.0;
+        double averagePages = validCount == 0
+                ? 0.0
+                : (double) totalPages / validCount;
 
         StringBuilder report = new StringBuilder();
-        report.append("===== ЗВІТ КАТАЛОГУ КНИЖОК =====\n");
-        report.append(String.format(Locale.ROOT, "Правильних записів: %d%n", validCount));
-        report.append(String.format(Locale.ROOT, "Неправильних записів: %d%n", invalidCount));
-        report.append(String.format(Locale.ROOT, "Середня кількість сторінок: %.2f%n", averagePages));
-        report.append(String.format(Locale.ROOT, "Найдорожча книга: %s (%.2f грн)%n",
-                mostExpensiveBook.isEmpty() ? "N/A" : mostExpensiveBook, maxPrice < 0 ? 0.0 : maxPrice));
-        report.append(String.format(Locale.ROOT, "Сумарна вартість каталогу: %.2f грн%n", totalPriceSum));
+
+        report.append("===== ЗВІТ КАТАЛОГУ КНИЖОК =====")
+                .append(System.lineSeparator());
+
+        report.append(String.format(
+                Locale.ROOT,
+                "Коректних записів: %d%n",
+                validCount
+        ));
+
+        report.append(String.format(
+                Locale.ROOT,
+                "Некоректних записів: %d%n",
+                errors.size()
+        ));
+
+        report.append(String.format(
+                Locale.ROOT,
+                "Середня кількість сторінок: %.2f%n",
+                averagePages
+        ));
+
+        if (validCount > 0) {
+            report.append(String.format(
+                    Locale.ROOT,
+                    "Найдорожча книга: %s (%s) (%.2f грн)%n",
+                    mostExpensiveTitle,
+                    mostExpensiveAuthor,
+                    maxPrice
+            ));
+        } else {
+            report.append("Найдорожча книга: немає")
+                    .append(System.lineSeparator());
+        }
+
+        report.append(String.format(
+                Locale.ROOT,
+                "Сумарна вартість каталогу: %.2f грн%n",
+                totalCatalogValue
+        ));
 
         if (!errors.isEmpty()) {
-            report.append("\nДеталі помилок:\n");
-            for (String err : errors) {
-                report.append(" - ").append(err).append("\n");
+            report.append(System.lineSeparator())
+                    .append("Помилки:")
+                    .append(System.lineSeparator());
+
+            for (String error : errors) {
+                report.append(" - ")
+                        .append(error)
+                        .append(System.lineSeparator());
             }
         }
 
-        System.out.print(report.toString());
-
-        try {
-    Path parentDir = outputPath.getParent();
-    if (parentDir != null) {
-        Files.createDirectories(parentDir);
+        return report.toString();
     }
-    Files.writeString(outputPath, report.toString(), StandardCharsets.UTF_8);
-} catch (IOException e) {
-    System.err.println("Помилка запису файлу звіту: " + e.getMessage());
-}
+
+    /**
+     * Виводить довідку про використання програми.
+     */
+    private static void printHelp() {
+        System.out.println(
+                "Використання: java -jar lab01.jar "
+                        + "[--help] [--version] "
+                        + "[--input <файл>] [--output <файл>]"
+        );
     }
 }
