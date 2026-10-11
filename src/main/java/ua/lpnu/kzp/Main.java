@@ -1,3 +1,4 @@
+
 package ua.lpnu.kzp;
 
 import java.io.IOException;
@@ -11,16 +12,21 @@ import java.util.Locale;
 /**
  * Консольна програма для обробки каталогу книжок.
  *
- * Формат запису:
- * title;author;pages;price
+ * <p>Лабораторна робота №2, варіант 1.</p>
+ *
+ * <p>Формат CSV:
+ * title;author;pages;price</p>
  */
 public final class Main {
 
-    private static final Path DEFAULT_INPUT = Path.of("data", "input.csv");
-    private static final Path DEFAULT_OUTPUT = Path.of("out", "report.txt");
+    private static final Path DEFAULT_INPUT =
+            Path.of("data", "input.csv");
+
+    private static final Path DEFAULT_OUTPUT =
+            Path.of("out", "report.txt");
 
     private Main() {
-        // Службовий клас не потребує створення екземплярів.
+        // Службовий клас не потребує екземплярів.
     }
 
     /**
@@ -44,20 +50,26 @@ public final class Main {
                 }
                 case "--input" -> {
                     if (i + 1 >= args.length) {
-                        System.err.println("Помилка: після --input потрібно вказати шлях.");
+                        System.err.println(
+                                "Помилка: після --input потрібно вказати шлях."
+                        );
                         return;
                     }
                     input = Path.of(args[++i]);
                 }
                 case "--output" -> {
                     if (i + 1 >= args.length) {
-                        System.err.println("Помилка: після --output потрібно вказати шлях.");
+                        System.err.println(
+                                "Помилка: після --output потрібно вказати шлях."
+                        );
                         return;
                     }
                     output = Path.of(args[++i]);
                 }
                 default -> {
-                    System.err.println("Невідомий аргумент: " + args[i]);
+                    System.err.println(
+                            "Невідомий аргумент: " + args[i]
+                    );
                     printHelp();
                     return;
                 }
@@ -73,92 +85,72 @@ public final class Main {
                 Files.createDirectories(parent);
             }
 
-            Files.writeString(output, report, StandardCharsets.UTF_8);
+            Files.writeString(
+                    output,
+                    report,
+                    StandardCharsets.UTF_8
+            );
         } catch (IOException e) {
-            System.err.println("Помилка роботи з файлом: " + e.getMessage());
+            System.err.println(
+                    "Помилка роботи з файлом: " + e.getMessage()
+            );
         }
     }
 
     /**
-     * Читає каталог, перевіряє записи та формує звіт.
+     * Читає CSV-каталог і формує текстовий звіт.
      *
      * @param input шлях до CSV-файлу
-     * @return сформований текст звіту
+     * @return сформований звіт
      * @throws IOException якщо файл неможливо прочитати
      */
     static String processCatalog(Path input) throws IOException {
-        List<String> lines = Files.readAllLines(input, StandardCharsets.UTF_8);
 
-        int validCount = 0;
-        int totalPages = 0;
+        List<String> lines =
+                Files.readAllLines(input, StandardCharsets.UTF_8);
+
+        List<Book> books = new ArrayList<>();
+        List<String> errors = new ArrayList<>();
+
+        // Розбір CSV виконується класом Book.
+        for (int i = 0; i < lines.size(); i++) {
+            int lineNumber = i + 1;
+
+            try {
+                Book book = Book.fromCsv(lines.get(i));
+                books.add(book);
+            } catch (IllegalArgumentException e) {
+                errors.add(
+                        "Рядок " + lineNumber + ": " + e.getMessage()
+                );
+            }
+        }
+
+        int validCount = books.size();
+
+        // Виправлення зауваження №2 з лабораторної №1.
+        // long запобігає переповненню під час
+        // підсумовування значень типу int.
+        long totalPages = 0L;
+
         double totalCatalogValue = 0.0;
         double maxPrice = Double.NEGATIVE_INFINITY;
 
-        String mostExpensiveTitle = "";
-        String mostExpensiveAuthor = "";
+        Book mostExpensiveBook = null;
 
-        List<String> errors = new ArrayList<>();
+        for (Book book : books) {
 
-        for (int i = 0; i < lines.size(); i++) {
-            String line = lines.get(i);
-            int lineNumber = i + 1;
+            PagePrice pagePrice = new PagePrice(
+                    book.getPages(),
+                    book.getPrice()
+            );
 
-            if (line.trim().isEmpty()) {
-                errors.add("Рядок " + lineNumber + ": порожній рядок");
-                continue;
-            }
+            totalPages += pagePrice.pages();
+            totalCatalogValue += pagePrice.price();
 
-            String[] fields = line.split(";", -1);
-
-            if (fields.length != 4) {
-                errors.add("Рядок " + lineNumber + ": неправильна кількість полів");
-                continue;
-            }
-
-            String title = fields[0].trim();
-            String author = fields[1].trim();
-            String pagesText = fields[2].trim();
-            String priceText = fields[3].trim();
-
-            if (title.isEmpty() || author.isEmpty()) {
-                errors.add("Рядок " + lineNumber + ": порожня назва книжки або автор");
-                continue;
-            }
-
-            try {
-                int pages = Integer.parseInt(pagesText);
-                double price = Double.parseDouble(priceText);
-
-                if (pages <= 0) {
-                    errors.add(
-                            "Рядок " + lineNumber
-                                    + ": кількість сторінок повинна бути більшою за 0"
-                    );
-                    continue;
-                }
-
-                if (price < 0) {
-                    errors.add(
-                            "Рядок " + lineNumber
-                                    + ": ціна не може бути від'ємною"
-                    );
-                    continue;
-                }
-
-                validCount++;
-                totalPages += pages;
-                totalCatalogValue += price;
-
-                if (price > maxPrice) {
-                    maxPrice = price;
-                    mostExpensiveTitle = title;
-                    mostExpensiveAuthor = author;
-                }
-            } catch (NumberFormatException e) {
-                errors.add(
-                        "Рядок " + lineNumber
-                                + ": неправильний числовий формат"
-                );
+            if (pagePrice.price() > maxPrice) {
+                maxPrice = pagePrice.price();
+                mostExpensiveBook = book;
             }
         }
 
@@ -189,13 +181,13 @@ public final class Main {
                 averagePages
         ));
 
-        if (validCount > 0) {
+        if (mostExpensiveBook != null) {
             report.append(String.format(
                     Locale.ROOT,
                     "Найдорожча книга: %s (%s) (%.2f грн)%n",
-                    mostExpensiveTitle,
-                    mostExpensiveAuthor,
-                    maxPrice
+                    mostExpensiveBook.getTitle(),
+                    mostExpensiveBook.getAuthor(),
+                    mostExpensiveBook.getPrice()
             ));
         } else {
             report.append("Найдорожча книга: немає")
