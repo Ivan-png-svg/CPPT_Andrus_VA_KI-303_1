@@ -1,4 +1,3 @@
-
 package ua.lpnu.kzp;
 
 import org.junit.jupiter.api.Test;
@@ -62,6 +61,23 @@ class BookBuilderTest {
                         .author("Автор")
                         .price(50.00)
                         .build()
+        );
+    }
+
+    @Test
+    void testBuilderRejectsMissingPrice() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> Book.builder()
+                        .title("Книга")
+                        .author("Автор")
+                        .pages(100)
+                        .build()
+        );
+
+        assertEquals(
+                "потрібно вказати ціну книжки",
+                exception.getMessage()
         );
     }
 
