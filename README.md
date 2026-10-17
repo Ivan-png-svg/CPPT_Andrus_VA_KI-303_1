@@ -220,7 +220,7 @@ java -version
 ### 7.5. Запуск JAR
 
 ```powershell
-java -jar .\target\lab01-1.0.0-shaded.jar --input .\data\input.csv --output .\out\report.txt
+java -jar .\target\lab01-2.0.0-shaded.jar --input .\data\input.csv --output .\out\report.txt
 ```
 
 Назва артефакту `lab01` залишилася від лабораторної №1, оскільки лабораторна №2 розвиває той самий Maven-проєкт.

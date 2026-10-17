@@ -1,4 +1,3 @@
-
 package ua.lpnu.kzp;
 
 import java.io.IOException;
@@ -14,10 +13,11 @@ import java.util.Locale;
  *
  * <p>Лабораторна робота №2, варіант 1.</p>
  *
- * <p>Формат CSV:
- * title;author;pages;price</p>
+ * <p>Формат CSV: title;author;pages;price</p>
  */
 public final class Main {
+
+    private static final String VERSION = "2.0.0";
 
     private static final Path DEFAULT_INPUT =
             Path.of("data", "input.csv");
@@ -45,7 +45,7 @@ public final class Main {
                     return;
                 }
                 case "--version" -> {
-                    System.out.println("1.0.0");
+                    System.out.println(VERSION);
                     return;
                 }
                 case "--input" -> {
@@ -128,7 +128,6 @@ public final class Main {
 
         int validCount = books.size();
 
-        // Виправлення зауваження №2 з лабораторної №1.
         // long запобігає переповненню під час
         // підсумовування значень типу int.
         long totalPages = 0L;

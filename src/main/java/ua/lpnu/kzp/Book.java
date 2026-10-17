@@ -1,4 +1,3 @@
-
 package ua.lpnu.kzp;
 
 import java.util.Locale;
@@ -169,15 +168,15 @@ public final class Book {
     /**
      * Builder для покрокового створення незмінного Book.
      *
-     * <p>Перевірка даних виконується конструктором Book
-     * під час виклику build().</p>
+     * <p>Builder перевіряє наявність ціни.
+     * Інші дані перевіряє конструктор Book.</p>
      */
     public static final class Builder {
 
         private String title;
         private String author;
         private int pages;
-        private double price;
+        private Double price;
 
         private Builder() {
             // Використовуйте Book.builder().
@@ -234,6 +233,12 @@ public final class Book {
          * @throws IllegalArgumentException якщо дані некоректні
          */
         public Book build() {
+            if (price == null) {
+                throw new IllegalArgumentException(
+                        "потрібно вказати ціну книжки"
+                );
+            }
+
             return new Book(title, author, pages, price);
         }
     }

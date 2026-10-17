@@ -360,13 +360,13 @@ BUILD SUCCESS
 Після успішної збірки сформовано виконуваний JAR:
 
 ```text
-target/lab01-1.0.0-shaded.jar
+target/lab01-2.0.0-shaded.jar
 ```
 
 Запуск програми:
 
 ```powershell
-java -jar .\target\lab01-1.0.0-shaded.jar --input .\data\input.csv --output .\out\report.txt
+java -jar .\target\lab01-2.0.0-shaded.jar --input .\data\input.csv --output .\out\report.txt
 ```
 
 Назва артефакту `lab01` залишена для сумісності з наявною конфігурацією Maven-проєкту.
