@@ -16,7 +16,7 @@
 
 У лабораторній роботі №2 виконано рефакторинг із використанням окремих класів, Java `record`, шаблону Builder, розширено тестування та виправлено зауваження до лабораторної №1.
 
-Розробка лабораторної №2 виконується в окремій Git-гілці `Lab_2`. Початковий стан лабораторної №1 збережено в гілці `Lab_1`.
+Розробку лабораторної №2 виконано в гілці `Lab_2`, після чого зміни об’єднано з `main`. Початковий стан лабораторної №1 збережено в гілці `Lab_1`. Додаткові виправлення після перевірки коду виконано в гілці `fix/lab2-review` (коміт `656e8b7`) та об’єднано через Pull Request #11. Завдання GitHub Issues #4–#7 закриті.
 
 ## 2. Формат вхідних даних
 
@@ -127,7 +127,7 @@ Book book = Book.builder()
         .build();
 ```
 
-Перевірка даних виконується конструктором `Book` під час виклику `build()`.
+Перевірка даних виконується конструктором `Book` під час виклику `build()`. Ціну необхідно явно задати методом `.price(...)`: якщо її не вказано, `build()` генерує `IllegalArgumentException`. При цьому явно задана ціна `0.0` дозволена. Поведінку перевіряє тест `testBuilderRejectsMissingPrice()`.
 
 Повторне використання Builder не змінює раніше створених об'єктів.
 
@@ -285,8 +285,8 @@ baseline/report-lab01.txt
 | `MainTest` | 8 |
 | `BookTest` | 9 |
 | `PagePriceTest` | 7 |
-| `BookBuilderTest` | 7 |
-| **Разом** | **31** |
+| `BookBuilderTest` | 8 |
+| **Разом** | **32** |
 
 Перевіряються:
 
@@ -300,12 +300,13 @@ baseline/report-lab01.txt
 - перевірка інваріантів `Book` і `PagePrice`;
 - `equals()`, `hashCode()` та `toString()` для record;
 - створення об'єктів через Builder;
-- незалежність створених Builder об'єктів.
+- незалежність створених Builder об'єктів;
+- відхилення відсутньої ціни в Builder за допустимості явно заданої ціни `0.0`.
 
 Підтверджений результат:
 
 ```text
-Tests run: 31, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 32, Failures: 0, Errors: 0, Skipped: 0
 BUILD SUCCESS
 ```
 
@@ -333,13 +334,15 @@ BUILD SUCCESS
 ```text
 src/
 ├── main/
-│   └── java/
-│       └── ua/
-│           └── lpnu/
-│               └── kzp/
-│                   ├── Main.java
-│                   ├── Book.java
-│                   └── PagePrice.java
+│   ├── java/
+│   │   └── ua/
+│   │       └── lpnu/
+│   │           └── kzp/
+│   │               ├── Main.java
+│   │               ├── Book.java
+│   │               └── PagePrice.java
+│   └── resources/
+│       └── version.properties
 └── test/
     └── java/
         └── ua/
@@ -367,4 +370,7 @@ src/
 - `Locale.ROOT` для числового форматування;
 - `System.lineSeparator()` для платформонезалежних переносів рядків;
 - Javadoc;
-- Git-гілки для окремих лабораторних робіт.
+- Git-гілки для окремих лабораторних робіт;
+- GitHub Actions CI: перевірка `verify` на Ubuntu, Windows і macOS для `push` і Pull Request до `main`;
+- збереження JAR-артефактів кожної CI-збірки;
+- Maven-фільтрація `version.properties` для версії та номера збірки.
