@@ -1,15 +1,18 @@
+
 package ua.lpnu.kzp;
 
 import java.util.Locale;
+import java.util.Objects;
 
 /**
- * Представляє книжку в каталозі.
- * Лабораторна робота №2, варіант 1.
+ * Базовий клас книжки в каталозі.
+ * Лабораторна робота №3, варіант 1.
  *
- * <p>Клас є незмінним: усі поля private final,
- * а відкриті сеттери відсутні.</p>
+ * <p>Містить спільні характеристики книжок.
+ * Дозволяє спадкування лише визначеним підкласам.</p>
  */
-public final class Book {
+public sealed class Book
+        permits PrintedBook, ElectronicBook {
 
     private final String title;
     private final String author;
@@ -17,15 +20,44 @@ public final class Book {
     private final double price;
 
     /**
-     * Створює книжку з перевіркою коректності даних.
+     * Створює книжку.
      *
      * @param title назва книжки
      * @param author автор книжки
      * @param pages кількість сторінок
      * @param price ціна книжки
-     * @throws IllegalArgumentException якщо дані некоректні
      */
     public Book(String title, String author, int pages, double price) {
+        this(validate(title, author, pages, price));
+    }
+
+    /**
+     * Приватний конструктор, який приймає перевірені дані.
+     *
+     * @param data перевірені характеристики книжки
+     */
+    private Book(ValidatedBookData data) {
+        this.title = data.title();
+        this.author = data.author();
+        this.pages = data.pages();
+        this.price = data.price();
+    }
+
+    /**
+     * Перевіряє дані до створення об'єкта.
+     *
+     * @param title назва
+     * @param author автор
+     * @param pages сторінки
+     * @param price ціна
+     * @return перевірені дані
+     */
+    private static ValidatedBookData validate(
+            String title,
+            String author,
+            int pages,
+            double price
+    ) {
         if (title == null || author == null
                 || title.isBlank() || author.isBlank()) {
             throw new IllegalArgumentException(
@@ -51,24 +83,34 @@ public final class Book {
             );
         }
 
-        this.title = title.trim();
-        this.author = author.trim();
-        this.pages = pages;
-        this.price = price;
+        return new ValidatedBookData(
+                title.trim(),
+                author.trim(),
+                pages,
+                price
+        );
+    }
+
+    /**
+     * Допоміжний тип для зберігання перевірених даних.
+     */
+    private record ValidatedBookData(
+            String title,
+            String author,
+            int pages,
+            double price
+    ) {
     }
 
     /**
      * Створює книжку з CSV-рядка.
      *
-     * @param csvLine рядок формату title;author;pages;price
-     * @return об'єкт Book
-     * @throws IllegalArgumentException якщо запис некоректний
+     * @param csvLine рядок CSV
+     * @return книжка
      */
     public static Book fromCsv(String csvLine) {
         if (csvLine == null || csvLine.isBlank()) {
-            throw new IllegalArgumentException(
-                    "порожній рядок"
-            );
+            throw new IllegalArgumentException("порожній рядок");
         }
 
         String[] fields = csvLine.split(";", -1);
@@ -95,7 +137,6 @@ public final class Book {
             double price = Double.parseDouble(priceText);
 
             return new Book(title, author, pages, price);
-
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(
                     "неправильний числовий формат", e
@@ -106,7 +147,7 @@ public final class Book {
     /**
      * Повертає назву книжки.
      *
-     * @return назва книжки
+     * @return назва
      */
     public String getTitle() {
         return title;
@@ -115,7 +156,7 @@ public final class Book {
     /**
      * Повертає автора книжки.
      *
-     * @return автор книжки
+     * @return автор
      */
     public String getAuthor() {
         return author;
@@ -124,7 +165,7 @@ public final class Book {
     /**
      * Повертає кількість сторінок.
      *
-     * @return кількість сторінок
+     * @return сторінки
      */
     public int getPages() {
         return pages;
@@ -133,16 +174,34 @@ public final class Book {
     /**
      * Повертає ціну книжки.
      *
-     * @return ціна книжки
+     * @return ціна
      */
     public double getPrice() {
         return price;
     }
 
     /**
+     * Повертає формат книжки.
+     *
+     * @return формат
+     */
+    public BookFormat getFormat() {
+        return BookFormat.PRINTED;
+    }
+
+    /**
+     * Обчислює час читання.
+     *
+     * @return час читання в годинах
+     */
+    public double calculateReadingHours() {
+        return pages / 30.0;
+    }
+
+    /**
      * Повертає текстове представлення книжки.
      *
-     * @return інформація про книжку
+     * @return опис книжки
      */
     @Override
     public String toString() {
@@ -157,19 +216,50 @@ public final class Book {
     }
 
     /**
-     * Створює новий Builder для побудови книжки.
+     * Порівнює книжки.
      *
-     * @return новий Builder
+     * @param obj інший об'єкт
+     * @return true, якщо книжки рівні
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+
+        Book other = (Book) obj;
+
+        return pages == other.pages
+                && Double.compare(price, other.price) == 0
+                && Objects.equals(title, other.title)
+                && Objects.equals(author, other.author);
+    }
+
+    /**
+     * Обчислює хеш-код книжки.
+     *
+     * @return хеш-код
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(title, author, pages, price);
+    }
+
+    /**
+     * Створює Builder.
+     *
+     * @return Builder
      */
     public static Builder builder() {
         return new Builder();
     }
 
     /**
-     * Builder для покрокового створення незмінного Book.
-     *
-     * <p>Builder перевіряє наявність ціни.
-     * Інші дані перевіряє конструктор Book.</p>
+     * Builder для створення книжки.
      */
     public static final class Builder {
 
@@ -179,14 +269,13 @@ public final class Book {
         private Double price;
 
         private Builder() {
-            // Використовуйте Book.builder().
         }
 
         /**
-         * Встановлює назву книжки.
+         * Встановлює назву.
          *
-         * @param title назва книжки
-         * @return поточний Builder
+         * @param title назва
+         * @return Builder
          */
         public Builder title(String title) {
             this.title = title;
@@ -194,10 +283,10 @@ public final class Book {
         }
 
         /**
-         * Встановлює автора книжки.
+         * Встановлює автора.
          *
-         * @param author автор книжки
-         * @return поточний Builder
+         * @param author автор
+         * @return Builder
          */
         public Builder author(String author) {
             this.author = author;
@@ -207,8 +296,8 @@ public final class Book {
         /**
          * Встановлює кількість сторінок.
          *
-         * @param pages кількість сторінок
-         * @return поточний Builder
+         * @param pages сторінки
+         * @return Builder
          */
         public Builder pages(int pages) {
             this.pages = pages;
@@ -216,10 +305,10 @@ public final class Book {
         }
 
         /**
-         * Встановлює ціну книжки.
+         * Встановлює ціну.
          *
-         * @param price ціна книжки
-         * @return поточний Builder
+         * @param price ціна
+         * @return Builder
          */
         public Builder price(double price) {
             this.price = price;
@@ -227,10 +316,9 @@ public final class Book {
         }
 
         /**
-         * Створює незмінний об'єкт Book.
+         * Створює книжку.
          *
          * @return нова книжка
-         * @throws IllegalArgumentException якщо дані некоректні
          */
         public Book build() {
             if (price == null) {
