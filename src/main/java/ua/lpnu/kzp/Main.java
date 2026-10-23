@@ -17,7 +17,7 @@ import java.util.Locale;
  */
 public final class Main {
 
-    private static final String VERSION = "2.0.0";
+    private static final String VERSION = "3.0.0";
 
     private static final Path DEFAULT_INPUT =
             Path.of("data", "input.csv");
