@@ -29,3 +29,6 @@ target/
 # Generated reports
 out/
 data/output.txt
+
+# Local VS Code settings
+.vscode/
