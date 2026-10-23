@@ -162,10 +162,10 @@ mvn clean verify
 Локально використовується команда `mvn`, оскільки Maven Wrapper на Windows 8.1 у цьому середовищі працював некоректно. Запуск основної програми після збірки:
 
 ```powershell
-java -jar .\target\lab01-2.0.0.jar
+java -jar .\target\lab01-3.0.0.jar
 ```
 
-**Перевірка CI на GitHub:** для Pull Request #16 створено запуск **CI Workflow #17**. На сторінці GitHub Actions відображено зелений статус завершення цього запуску. Workflow налаштовано як матрицю з Ubuntu, Windows і macOS; стан кожного окремого завдання зафіксовано на скріншоті `docs/lab3/06-github-actions.png` (потрібно переконатися, що на ньому видно всі три завдання).
+**Перевірка CI на GitHub:** Build #23 завершився успішно. Усі три завдання матриці (Ubuntu, Windows, macOS) пройшли перевірку. Опубліковано три JAR-артефакти. Результати CI наведено на скріншоті `docs/lab3/06-github-actions.png`.
 
 **Рисунок 6 — GitHub Actions CI для лабораторної роботи №3.**
 
@@ -182,7 +182,7 @@ java -jar .\target\lab01-2.0.0.jar
 
 **GitHub Issues:** на сторінці репозиторію відображено чотири відкриті завдання. Їхні точні номери потрібно звірити з GitHub перед остаточним оформленням; статус «закрито» не заявляється.
 
-**Pull Request `Lab_3` → `main`:** [#16 — Lab 3: Implement inheritance, polymorphism and sealed hierarchy](https://github.com/Ivan-png-svg/CPPT_Andrus_VA_KI-303_1/pull/16). На момент підготовки звіту PR має статус **Open**, злиття з `main` ще не виконано. Основний коміт реалізації: `659d50c`.
+**Pull Request `Lab_3` → `main`:** PR #16: **Merged** into `main`. Implementation commit: `659d50c`.
 
 **Рисунок 1 — Завдання GitHub Issues для лабораторної №3.**
 
@@ -192,7 +192,7 @@ java -jar .\target\lab01-2.0.0.jar
 
 ![Pull Request #16](docs/lab3/07-pull-request.png)
 
-**Версія Maven-проєкту:** на момент підготовки звіту використовується JAR `lab01-2.0.0.jar`. **Git-тег ЛР №3 ще не створено**; після визначення нової версії потрібно додати фактичну назву тегу та скріншот `docs/lab3/08-git-tag.png`.
+**Maven version:** `3.0.0`. **Git tag:** `lab3-v1.0` (annotated). Screenshot: `docs/lab3/08-git-tag.png`.
 
 ## 13. Перевірка сумісності з попередніми лабораторними
 
@@ -202,7 +202,7 @@ java -jar .\target\lab01-2.0.0.jar
 
 ```powershell
 mvn clean verify
-java -jar .\target\lab01-2.0.0.jar
+java -jar .\target\lab01-3.0.0.jar
 $baseline = [System.IO.File]::ReadAllBytes("baseline\lab2-report.txt")
 $current = [System.IO.File]::ReadAllBytes("out\report.txt")
 [System.Linq.Enumerable]::SequenceEqual([byte[]]$baseline, [byte[]]$current)
@@ -242,7 +242,7 @@ $current = [System.IO.File]::ReadAllBytes("out\report.txt")
 
 У лабораторній роботі №3 модель каталогу розширено ієрархією `Book` → `PrintedBook` / `ElectronicBook`, переліком `BookFormat` та поліморфним обчисленням часу читання. Для рівності об'єктів ураховано фактичний тип і специфічні поля підкласів. Реалізовано демонстрацію pattern matching `switch` у Java 21 без `default`, із поясненням ролі конкретного базового класу у вичерпності.
 
-Збережено основний механізм обробки CSV і формування звіту з попередніх лабораторних. Для автоматичної перевірки використовується наявна конфігурація GitHub Actions на трьох операційних системах. Окрема перевірка SpotBugs не виявила зауважень; для PR #16 зафіксовано успішний запуск GitHub Actions #17. Для остаточного завершення необхідно звірити підсумкову кількість тестів, результати трьох завдань CI, оформити Git-тег нової версії та оновити звіт після злиття PR.
+Збережено обробку CSV і формування звіту. Усі 47 тестів пройдено успішно, Maven verify завершився без помилок, SpotBugs не виявив зауважень. GitHub Actions Build #23 успішно виконав перевірки на Ubuntu, Windows і macOS та опублікував три JAR-артефакти. Pull Request #16 злито в main. Створено анотований Git-тег lab3-v1.0; версія Maven-проєкту — 3.0.0.
 ### Git-тег лабораторної роботи №3
 Для фіксації завершеної лабораторної роботи створено
 анотований Git-тег `lab3-v1.0`.
