@@ -15,6 +15,8 @@ public sealed class Book
         permits PrintedBook, ElectronicBook {
 
     private final String title;
+    private final int publicationYear;
+    private final BookGenre genre;
     private final String author;
     private final int pages;
     private final double price;
@@ -28,15 +30,32 @@ public sealed class Book
      * @param price ціна книжки
      */
     public Book(String title, String author, int pages, double price) {
-        this(validate(title, author, pages, price));
+        this(validate(title, author, pages, price), 0, BookGenre.UNSPECIFIED);
     }
+
+    /** Creates a book with publication metadata, preserving the original CSV model. */
+    public Book(String title, String author, int pages, double price,
+                int publicationYear, BookGenre genre) {
+        this(validate(title, author, pages, price), publicationYear, genre);
+    }
+
+    /** Publication year; zero means unspecified in legacy CSV. */
+    public int getPublicationYear() { return publicationYear; }
+
+    /** Genre of this book. */
+    public BookGenre getGenre() { return genre; }
 
     /**
      * Приватний конструктор, який приймає перевірені дані.
      *
      * @param data перевірені характеристики книжки
      */
-    private Book(ValidatedBookData data) {
+    private Book(ValidatedBookData data, int publicationYear, BookGenre genre) {
+        if (publicationYear < 0 || publicationYear > 9999 || genre == null) {
+            throw new IllegalArgumentException("Invalid year or genre");
+        }
+        this.publicationYear = publicationYear;
+        this.genre = genre;
         this.title = data.title();
         this.author = data.author();
         this.pages = data.pages();

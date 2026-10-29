@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- Book is sealed; its only permitted subclasses are final. The constructor
+         validates input and throws IllegalArgumentException intentionally.
+         Suppress only CT_CONSTRUCTOR_THROW for Book, not other SpotBugs checks. -->
+    <Match>
+        <Class name="ua.lpnu.kzp.Book"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+</FindBugsFilter>
