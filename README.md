@@ -1,4 +1,4 @@
-# Лабораторні роботи №1–3
+# Лабораторні роботи №1–4
 
 ## Каталог книжок — Java 21, Maven
 
@@ -18,7 +18,7 @@
 У лабораторній роботі №2 виконано рефакторинг із використанням окремих класів, Java `record`, шаблону Builder, розширено
 тестування та виправлено зауваження до лабораторної №1.
 
-У лабораторній роботі №3 додано ієрархію `Book` → `PrintedBook` / `ElectronicBook`, enum `BookFormat`, поліморфний розрахунок часу читання, рівність об’єктів та демонстрацію `sealed` і pattern matching `switch` у Java 21. Детальний звіт саме про ЛР №3 розміщено в `REPORT.md`.
+У лабораторній роботі №3 додано ієрархію `Book` → `PrintedBook` / `ElectronicBook`, enum `BookFormat`, поліморфний розрахунок часу читання, рівність об’єктів та демонстрацію `sealed` і pattern matching `switch` у Java 21. Історичний звіт ЛР №3 доступний у гілці `Lab_3`; поточний `REPORT.md` присвячений ЛР №4.
 
 Розробку лабораторної №2 виконано в гілці `Lab_2`, після чого зміни об’єднано з `main`. Початковий стан лабораторної №1 з
 бережено в гілці `Lab_1`. Додаткові виправлення після перевірки коду виконано в гілці `fix/lab2-review` (коміт `656e8b7`)
@@ -233,10 +233,10 @@ mvn clean verify
 ### 7.5. Запуск JAR
 
 ```powershell
-java -jar .\target\lab01-2.0.0.jar --input .\data\input.csv --output .\out\report.txt
+java -jar .\target\lab01-4.0.0.jar --input .\data\input.csv --output .\out\report.txt
 ```
 
-Назва артефакту `lab01` залишилася від лабораторної №1, оскільки лабораторна №2 розвиває той самий Maven-проєкт.
+Назва артефакту `lab01` збережена для сумісності з попередніми лабораторними; поточна версія Maven — `4.0.0`.
 
 ## 8. Аргументи командного рядка
 
@@ -439,13 +439,55 @@ java -cp target\classes ua.lpnu.kzp.BookCatalogDemo
 
 Старий сценарій `Main` та формат звіту збережено. Контрольний файл для побайтового порівняння — `baseline/lab2-report.txt`; результат фінальної перевірки буде зафіксовано в `REPORT.md`.
 
-`README.md` описує **всі три лабораторні**, а `REPORT.md` присвячено **лише лабораторній №3**.
+`README.md` містить історію лабораторних №1–4. Звіт ЛР №3 збережений у гілці `Lab_3`, а поточний `REPORT.md` присвячений ЛР №4.
 
 
-## Лабораторна №4 — Stream API (варіант 1)
+## 15. Лабораторна робота №4 — Stream API (варіант 1 «Бібліотека»)
 
-Збережено старий CSV `title;author;pages;price` та попередній консольний звіт. Для нових запитів додано необов'язкові метадані `publicationYear`, `BookGenre` (для старого CSV: `0`, `UNSPECIFIED`). Новий компонент `BookQueries` виконує filter, map, groupingBy, summarizingInt, top-N з `reversed().thenComparing()` і Optional-пошук. Зірочка: вкладене groupingBy за жанром і роком.
+### 15.1. Мета та сумісність
 
-Приклад запуску: `./mvnw test`, `./mvnw verify`, `./mvnw package`; демонстрація `java -cp target/classes ua.lpnu.kzp.Lab4Demo`. Основний JAR зберігає старий `Main` та `--version`, що читає Maven-фільтрований `version.properties`. Версія задається лише в `pom.xml` (`4.0.0`), номер збірки через `-DbuildNumber=...`.
+Реалізувати обробку каталогу книжок засобами Java Stream API, не порушуючи роботу лабораторних №1–3. Основна програма `Main` і далі читає CSV `title;author;pages;price`, перевіряє записи та створює попередній звіт. Для Stream-запитів у `Book` передбачено додаткові метадані року публікації (`publicationYear`) та жанру (`BookGenre`). Для старих CSV-записів використовуються значення за замовчуванням `0` та `UNSPECIFIED`.
 
-GitHub: створіть гілку `lab4-stream-api`, Issues для запитів, тестів і документації та PR у `main`. CI перевіряє Ubuntu, Windows, macOS та завантажує JAR як артефакт. Тег після перевірки: `v4.0.0`.
+### 15.2. Реалізовані запити
+
+| Операція | Stream API | Результат демонстрації |
+|---|---|---|
+| Книги від 2020 року включно | `filter` | `Alpha, Beta, Delta, Alpha` |
+| Назви книжок | `map` | `Alpha, Beta, Gamma, Delta, Alpha, Epsilon` |
+| Кількість за жанрами | `groupingBy` + `counting` | `HISTORY=1, FANTASY=1, FICTION=2, SCIENCE=2` |
+| Статистика сторінок | `summarizingInt` | `count=6, sum=1800, min=100, max=550, avg=300.00` |
+| Топ-5 за сторінками | `sorted` + `limit` | `Gamma, Alpha, Beta, Delta, Alpha` |
+| Пошук за назвою | `findFirst` + `Optional` | `Alpha → Author A`; відсутня назва → `Optional.empty` |
+| Завдання із зірочкою | Вкладений `groupingBy` | Кількість книжок за жанром і роком |
+
+Сортування топу: кількість сторінок за спаданням, за однакової кількості — назва за зростанням. Запити винесені до `BookQueries`, демонстрація — до `Lab4Demo`, тести — до `BookQueriesTest`.
+
+### 15.3. Збірка та запуск
+
+Для Windows PowerShell у корені репозиторію:
+
+```powershell
+.\mvnw.cmd clean verify
+java -jar target\lab01-4.0.0.jar --version
+java -jar target\lab01-4.0.0.jar
+java -cp target\lab01-4.0.0.jar ua.lpnu.kzp.Lab4Demo
+```
+
+Для Linux/macOS: `./mvnw clean verify`. Для коректного виводу українських символів у старій Windows-консолі за потреби:
+
+```powershell
+chcp 65001
+$env:JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8"
+```
+
+Версія `4.0.0` задається в `pom.xml`; `Main` отримує її через `VersionInfo` з Maven-фільтрованого `version.properties`, без жорстко заданої версії у вихідному коді.
+
+### 15.4. Підтверджені результати
+
+- Локальний `clean verify`: `BUILD SUCCESS`.
+- JUnit: **52 тести**, 0 failures, 0 errors, 0 skipped.
+- SpotBugs: перевірка проходить із налаштованим `spotbugs-exclude.xml`; виключення для `CT_CONSTRUCTOR_THROW` слід відрізняти від усунення причини попередження.
+- Виконуваний JAR: `--version` виводить `4.0.0`; старий CSV-звіт і `Lab4Demo` запускаються успішно.
+- GitHub: гілка `Lab_4`, Pull Request до `main`; за повідомленням про перевірку PR пройдено три CI-перевірки. Перед фіналізацією слід звірити ОС і наявність завантажених JAR-артефактів на сторінці запуску Actions.
+
+GitHub Issues, злиття PR та тег `v4.0.0` оформлюються окремо; не вважаються завершеними до фактичного підтвердження.
