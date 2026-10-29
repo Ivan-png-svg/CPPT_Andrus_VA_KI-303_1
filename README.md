@@ -440,3 +440,12 @@ java -cp target\classes ua.lpnu.kzp.BookCatalogDemo
 Старий сценарій `Main` та формат звіту збережено. Контрольний файл для побайтового порівняння — `baseline/lab2-report.txt`; результат фінальної перевірки буде зафіксовано в `REPORT.md`.
 
 `README.md` описує **всі три лабораторні**, а `REPORT.md` присвячено **лише лабораторній №3**.
+
+
+## Лабораторна №4 — Stream API (варіант 1)
+
+Збережено старий CSV `title;author;pages;price` та попередній консольний звіт. Для нових запитів додано необов'язкові метадані `publicationYear`, `BookGenre` (для старого CSV: `0`, `UNSPECIFIED`). Новий компонент `BookQueries` виконує filter, map, groupingBy, summarizingInt, top-N з `reversed().thenComparing()` і Optional-пошук. Зірочка: вкладене groupingBy за жанром і роком.
+
+Приклад запуску: `./mvnw test`, `./mvnw verify`, `./mvnw package`; демонстрація `java -cp target/classes ua.lpnu.kzp.Lab4Demo`. Основний JAR зберігає старий `Main` та `--version`, що читає Maven-фільтрований `version.properties`. Версія задається лише в `pom.xml` (`4.0.0`), номер збірки через `-DbuildNumber=...`.
+
+GitHub: створіть гілку `lab4-stream-api`, Issues для запитів, тестів і документації та PR у `main`. CI перевіряє Ubuntu, Windows, macOS та завантажує JAR як артефакт. Тег після перевірки: `v4.0.0`.
