@@ -10,6 +10,20 @@ public final class VersionInfo {
 
     /** Returns the Maven project version, never a hardcoded Main constant. */
     public static String version() {
+        return properties().getProperty("version", "unknown");
+    }
+
+    /** Returns the build number supplied by Maven or CI. */
+    public static String buildNumber() {
+        return properties().getProperty("buildNumber", "local");
+    }
+
+    /** Returns the combined version and build identifier. */
+    public static String fullVersion() {
+        return version() + " (build " + buildNumber() + ")";
+    }
+
+    private static Properties properties() {
         Properties properties = new Properties();
         try (InputStream stream = VersionInfo.class.getResourceAsStream("/version.properties")) {
             if (stream == null) throw new IllegalStateException("version.properties missing");
@@ -17,6 +31,6 @@ public final class VersionInfo {
         } catch (IOException e) {
             throw new IllegalStateException("Cannot read version.properties", e);
         }
-        return properties.getProperty("version", "unknown");
+        return properties;
     }
 }

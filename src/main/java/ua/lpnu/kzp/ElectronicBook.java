@@ -40,6 +40,14 @@ public final class ElectronicBook extends Book {
         this.fileSizeMb = fileSizeMb;
     }
 
+    /** Creates a ElectronicBook with publication year and genre. */
+    public ElectronicBook(String title, String author, int pages, double price,
+            double fileSizeMb, int publicationYear, BookGenre genre) {
+        super(title, author, pages, price, publicationYear, genre);
+        if (!Double.isFinite(fileSizeMb) || fileSizeMb <= 0) throw new IllegalArgumentException("Invalid file size");
+        this.fileSizeMb = fileSizeMb;
+    }
+
     /**
      * @return розмір файлу в мегабайтах
      */

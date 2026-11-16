@@ -33,6 +33,13 @@ public final class PrintedBook extends Book {
         this.hardcover = hardcover;
     }
 
+    /** Creates a PrintedBook with publication year and genre. */
+    public PrintedBook(String title, String author, int pages, double price,
+            boolean hardcover, int publicationYear, BookGenre genre) {
+        super(title, author, pages, price, publicationYear, genre);
+        this.hardcover = hardcover;
+    }
+
     /**
      * @return true, якщо книжка має тверду обкладинку
      */
